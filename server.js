@@ -3,9 +3,8 @@ const app = express();
 const port = process.env.PORT || 3000; // Use the PORT variable set by Heroku
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
-const responses = require('./responses.json');
 
-// Get the credentials from environment variables
+// Parse the Dialogflow credentials from the environment variable
 let dialogflowKey;
 try {
     dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
@@ -36,7 +35,7 @@ app.get('/api/chat', async (req, res) => {
     const bannedWords = ["foulword1", "foulword2", "foulword3"];
     for (let word of bannedWords) {
         if (question.includes(word)) {
-            res.json({ answer: "Let's keep this conversation respectful, shall we? 😊" });
+            res.json({ response: "Let's keep this conversation respectful, shall we? 😊" });
             return;
         }
     }
@@ -75,7 +74,7 @@ app.get('/api/chat', async (req, res) => {
         res.json({ response });
     } catch (error) {
         console.error("ERROR:", error);
-        res.json({ answer: "Oops! Something went wrong. Please try again." });
+        res.json({ response: "Oops! Something went wrong. Please try again." });
     }
 });
 
