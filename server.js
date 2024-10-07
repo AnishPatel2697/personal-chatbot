@@ -9,7 +9,6 @@ console.log('Starting server...');
 
 let dialogflowKey;
 
-// Attempt to parse Dialogflow credentials from environment variable
 try {
     dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
     console.log('Parsed Dialogflow key successfully:', dialogflowKey);
@@ -17,11 +16,11 @@ try {
     console.error('Failed to parse Dialogflow credentials:', error);
 }
 
-// Validate the parsed Dialogflow key and ensure `project_id` exists
-if (!dialogflowKey || !dialogflowKey.project_id) {
-    console.error('Dialogflow key is invalid or missing `project_id`.');
-} else {
+// Additional validation to ensure `project_id` exists
+if (dialogflowKey && typeof dialogflowKey.project_id === 'string' && dialogflowKey.project_id.trim() !== '') {
     console.log('Using project_id:', dialogflowKey.project_id);
+} else {
+    console.error('Dialogflow key is invalid or missing `project_id`.');
 }
 
 // Create a session client for Dialogflow
@@ -35,6 +34,8 @@ if (dialogflowKey && dialogflowKey.project_id) {
     } catch (error) {
         console.error('Failed to create session client:', error);
     }
+} else {
+    console.error('Session client not created due to missing or invalid project_id.');
 }
 
 // Add a route for the root URL
