@@ -8,9 +8,10 @@ const uuid = require('uuid');
 let dialogflowKey;
 try {
     dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
+    console.log("Parsed Dialogflow key successfully:", dialogflowKey);
 } catch (error) {
-    console.error("Failed to parse DIALOGFLOW_KEY:", error);
-    process.exit(1); // Exit if there is an error in parsing
+    res.json({ answer: "Oops! Something went wrong. Please try again." });
+    return;
 }
 
 // Create a session client for Dialogflow using the parsed key from the environment
