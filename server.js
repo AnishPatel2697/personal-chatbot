@@ -3,15 +3,23 @@ const app = express();
 const port = process.env.PORT || 3000; // Use the PORT variable set by Heroku
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
-const fs = require('fs');
 const responses = require('./responses.json');
 
 // Get the credentials from environment variables
-const dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
+let dialogflowKey;
+try {
+    dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
+} catch (error) {
+    console.error("Failed to parse DIALOGFLOW_KEY:", error);
+    process.exit(1); // Exit if there is an error in parsing
+}
 
-// Create a session client for Dialogflow
+// Create a session client for Dialogflow using the parsed key from the environment
 const sessionClient = new dialogflow.SessionsClient({
-    credentials: dialogflowKey
+    credentials: {
+        private_key: dialogflowKey.private_key,
+        client_email: dialogflowKey.client_email
+    }
 });
 
 // Add a route for the root URL
