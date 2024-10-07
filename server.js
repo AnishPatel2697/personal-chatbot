@@ -14,6 +14,11 @@ const sessionClient = new dialogflow.SessionsClient({
     credentials: dialogflowKey
 });
 
+// Add a route for the root URL
+app.get('/', (req, res) => {
+    res.send("Welcome to Anish's Personal Chatbot! Use /api/chat?q=your-question to chat with me.");
+});
+
 // Endpoint to handle general questions
 app.get('/api/chat', async (req, res) => {
     const question = req.query.q.toLowerCase();
