@@ -3,24 +3,30 @@ const app = express();
 const port = process.env.PORT || 3000; // Use the PORT variable set by Heroku
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
+const fs = require('fs');
+const responses = require('./responses.json');
 
-// Parse the Dialogflow credentials from the environment variable
+// Get the credentials from environment variables
 let dialogflowKey;
 try {
     dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
     console.log("Parsed Dialogflow key successfully:", dialogflowKey);
 } catch (error) {
-    res.json({ answer: "Oops! Something went wrong. Please try again." });
-    return;
+    console.error("Error parsing Dialogflow key:", error);
+    process.exit(1); // Exit the process if credentials are not parsed successfully
 }
 
-// Create a session client for Dialogflow using the parsed key from the environment
-const sessionClient = new dialogflow.SessionsClient({
-    credentials: {
-        private_key: dialogflowKey.private_key,
-        client_email: dialogflowKey.client_email
-    }
-});
+// Create a session client for Dialogflow
+let sessionClient;
+try {
+    sessionClient = new dialogflow.SessionsClient({
+        credentials: dialogflowKey
+    });
+    console.log("Session client created successfully.");
+} catch (error) {
+    console.error("Error creating session client:", error);
+    process.exit(1); // Exit the process if session client creation fails
+}
 
 // Add a route for the root URL
 app.get('/', (req, res) => {
@@ -36,7 +42,7 @@ app.get('/api/chat', async (req, res) => {
     const bannedWords = ["foulword1", "foulword2", "foulword3"];
     for (let word of bannedWords) {
         if (question.includes(word)) {
-            res.json({ response: "Let's keep this conversation respectful, shall we? 😊" });
+            res.json({ answer: "Let's keep this conversation respectful, shall we? 😊" });
             return;
         }
     }
@@ -47,7 +53,11 @@ app.get('/api/chat', async (req, res) => {
 
         // Use Dialogflow to handle the user query
         const sessionId = uuid.v4();
+        console.log("Generated sessionId:", sessionId);
+        console.log("Using project_id:", dialogflowKey.project_id);
+
         const sessionPath = sessionClient.sessionPath(dialogflowKey.project_id, sessionId);
+        console.log("Session path generated:", sessionPath);
 
         const request = {
             session: sessionPath,
@@ -60,7 +70,7 @@ app.get('/api/chat', async (req, res) => {
         };
 
         // Log the Dialogflow request
-        console.log('Sending request to Dialogflow...');
+        console.log('Sending request to Dialogflow...', request);
 
         const dialogflowResponses = await sessionClient.detectIntent(request);
         const result = dialogflowResponses[0].queryResult;
@@ -75,7 +85,7 @@ app.get('/api/chat', async (req, res) => {
         res.json({ response });
     } catch (error) {
         console.error("ERROR:", error);
-        res.json({ response: "Oops! Something went wrong. Please try again." });
+        res.json({ answer: "Oops! Something went wrong. Please try again." });
     }
 });
 
