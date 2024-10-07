@@ -1,16 +1,17 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Use the PORT variable set by Heroku
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
+const fs = require('fs');
 const responses = require('./responses.json');
 
-// Import the service account key for Dialogflow
-const dialogflowKey = require('./dialogflow-key.json');
+// Get the credentials from environment variables
+const dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
 
 // Create a session client for Dialogflow
 const sessionClient = new dialogflow.SessionsClient({
-    keyFilename: 'dialogflow-key.json'
+    credentials: dialogflowKey
 });
 
 // Endpoint to handle general questions
